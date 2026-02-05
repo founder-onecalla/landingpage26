@@ -2,9 +2,9 @@
 
 export const COPY = {
   // Step 1 of 3: Category (required)
-  step1Title: 'What call are you putting off?',
+  step1Title: 'What calls are you putting off?',
   step1Subtitle: 'Pick a category, or type your own.',
-  step1Placeholder: 'Example: "cancel my gym membership"',
+  step1Placeholder: '',
   step1Button: 'Continue',
   step1Error: 'Please choose a category or type your own.',
 
@@ -42,14 +42,14 @@ export const CALL_CATEGORIES = [
   'Status tracking',
   'Account change',
   'Fix a mistake',
-  'Escalate to a human',
+  'Talk to a manager',
   'Other',
 ] as const;
 
 // Categories organized into 3 ticker lines
-export const CATEGORY_TICKER_LINE1 = ['Book or reschedule', 'Cancel something', 'Billing issue or dispute'] as const;
+export const CATEGORY_TICKER_LINE1 = ['Book or reschedule', 'Cancel a membership', 'Billing issue or dispute'] as const;
 export const CATEGORY_TICKER_LINE2 = ['Status tracking', 'Account change', 'Fix a mistake'] as const;
-export const CATEGORY_TICKER_LINE3 = ['Escalate to a human', 'Other'] as const;
+export const CATEGORY_TICKER_LINE3 = ['Talk to a manager', 'Other'] as const;
 
 // Company suggestions ticker (3 lines, exact content and order)
 export const COMPANY_TICKER_LINE1 = 'GEICO · Progressive · State Farm · Allstate · Liberty Mutual · Nationwide · Farmers Insurance · Travelers · USAA · AAA Insurance · American Family Insurance · The Hartford · MetLife · Mutual of Omaha · Chubb';

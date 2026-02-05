@@ -252,7 +252,7 @@ button, input, textarea, a {
 
 .clickable-ticker-line {
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .clickable-ticker-line:last-child {
