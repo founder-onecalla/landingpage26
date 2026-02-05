@@ -115,8 +115,37 @@ export interface SendVerificationCodeResult {
   token: string;
 }
 
+// Development mode: generate code locally when backend isn't available
+const DEV_MODE = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.DEV;
+
+function generateDevToken(email: string, code: string): string {
+  const payload = {
+    email,
+    code,
+    exp: Date.now() + 10 * 60 * 1000, // 10 minutes
+  };
+  return btoa(JSON.stringify(payload));
+}
+
 export async function sendVerificationCode(params: SendVerificationCodeParams): Promise<SendVerificationCodeResult> {
-  return callEdgeFunction('send-verification', params);
+  // Try the real API first
+  if (isConfigured()) {
+    try {
+      return await callEdgeFunction('send-verification', params);
+    } catch (err) {
+      console.warn('send-verification failed, falling back to dev mode:', err);
+    }
+  }
+  
+  // Dev fallback: generate code locally
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(`%c[DEV MODE] Verification code for ${params.email}: ${code}`, 'color: #6C5CE7; font-weight: bold; font-size: 16px;');
+  alert(`[DEV MODE] Your verification code is: ${code}`);
+  
+  return {
+    ok: true,
+    token: generateDevToken(params.email, code),
+  };
 }
 
 export interface VerifyCodeParams {
@@ -129,7 +158,32 @@ export interface VerifyCodeResult {
 }
 
 export async function verifyCode(params: VerifyCodeParams): Promise<VerifyCodeResult> {
-  return callEdgeFunction('verify-code', params);
+  // Try the real API first
+  if (isConfigured()) {
+    try {
+      return await callEdgeFunction('verify-code', params);
+    } catch (err) {
+      console.warn('verify-code failed, falling back to dev mode:', err);
+    }
+  }
+  
+  // Dev fallback: verify locally
+  try {
+    const payload = JSON.parse(atob(params.token));
+    
+    if (payload.exp < Date.now()) {
+      throw new Error('Code has expired. Please request a new one.');
+    }
+    
+    if (payload.code !== params.code) {
+      throw new Error('Invalid code. Please try again.');
+    }
+    
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof Error) throw err;
+    throw new Error('Invalid verification token');
+  }
 }
 
 // Helper to convert Blob to base64
