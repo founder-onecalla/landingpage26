@@ -55,7 +55,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'OneCallA <noreply@onecalla.com>',
+          from: 'OneCalla <noreply@onecalla.com>',
           to: email,
           subject: 'Verify your email',
           html: `
