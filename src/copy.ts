@@ -1,55 +1,37 @@
 // All user-facing copy. Do not modify without spec approval.
 
 export const COPY = {
-  // Step 1 of 2
-  step1Progress: 'Step 1 of 2',
+  // Step 1 of 3: Category (required)
   step1Title: 'What call are you putting off?',
   step1Subtitle: 'Pick a category, or type your own.',
   step1Placeholder: 'Example: "cancel my gym membership"',
   step1Button: 'Continue',
   step1Error: 'Please choose a category or type your own.',
 
-  // Step 2 of 2
-  step2Progress: 'Step 2 of 2',
-  step2Title: 'Where should we send next steps?',
-  step2Placeholder: 'name@email.com',
-  step2Button: 'Send me next steps',
-  step2Error: 'Please enter a valid email.',
+  // Step 2 of 3: Company + Details (optional)
+  step2Title: 'Tell us more (optional)',
+  step2Subtitle: 'This helps us handle your call faster.',
+  step2CompanyPlaceholder: 'Company name',
+  step2DetailsPlaceholder: "What's going on? Any details help...",
+  step2Button: 'Continue',
 
-  // Confirmation screen
-  confirmationText: 'Check your email for next steps.',
-  confirmationLink: 'Or click here for next step',
+  // Step 3 of 3: Email (required)
+  step3Title: 'Where should we send updates?',
+  step3Placeholder: 'name@email.com',
+  step3Button: 'Submit',
+  step3Error: 'Please enter a valid email.',
 
-  // Intake Page A (Company)
-  intakeATitle: 'Which company is this call with?',
-  intakeAPlaceholder: '',
-  intakeAError: 'Company is required',
-  intakeAButton: 'Continue',
-
-  // Intake Page B (Details)
-  intakeBTitle: "Tell us what's going on.",
-  intakeBPlaceholder: 'Type a brief description here…',
-  intakeBMicHelper: 'Tap to record',
-  intakeBTranscriptLabel: 'Transcript',
-  intakeBTranscriptHelper: 'Edit if needed.',
-  intakeBTryAgain: 'Try again',
-  intakeBError: 'Please describe what you need.',
-  intakeBButton: 'Submit',
-
-  // Completion screen
-  completionTitle: 'Submitted',
-  completionSubtext: "We'll follow up over email.",
-  completionButton: 'Submit another request',
+  // Done screen
+  doneTitle: "You're all set!",
+  doneSubtext: "We'll follow up over email with next steps.",
 
   // Shared
   keyboardHint: 'Press Enter to continue',
 
-  // Email (locked copy)
-  emailSubject: 'One quick step so we can handle your call',
-  emailHeadline: 'One quick step so we can handle your call',
-  emailBody: 'Thanks for reaching out. We just need a few more details to get your call handled.',
-  emailButton: 'Complete 2-minute intake',
-  emailExpiry: 'This link expires in 7 days.',
+  // Email (for follow-up)
+  emailSubject: "We're working on your call",
+  emailHeadline: "We're working on your call",
+  emailBody: "Thanks for submitting your request. We'll be in touch soon with updates.",
 } as const;
 
 // Call type categories for Step 1 (exact order)

@@ -59,6 +59,8 @@ export interface SubmitStep1Params {
   email: string;
   call_types: string[];
   avoided_call_text?: string;
+  company?: string;
+  description_text?: string;
   other_text?: string;
   utm_source?: string;
   utm_campaign?: string;

@@ -3,9 +3,17 @@ import { useSearchParams } from 'react-router-dom';
 import { submitStep1 } from '../lib/api';
 import { track } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
-import { COPY, CATEGORY_TICKER_LINE1, CATEGORY_TICKER_LINE2, CATEGORY_TICKER_LINE3 } from '../copy';
+import { 
+  COPY, 
+  CATEGORY_TICKER_LINE1, 
+  CATEGORY_TICKER_LINE2, 
+  CATEGORY_TICKER_LINE3,
+  COMPANY_TICKER_LINE1,
+  COMPANY_TICKER_LINE2,
+  COMPANY_TICKER_LINE3,
+} from '../copy';
 
-type Step = 1 | 2 | 'confirmation';
+type Step = 1 | 2 | 3 | 'done';
 
 // Clickable ticker component for category selection
 function ClickableTicker({ 
@@ -51,9 +59,27 @@ function ClickableTicker({
   );
 }
 
+// Non-interactive ticker for company suggestions
+function Ticker({ lines }: { lines: string[] }) {
+  return (
+    <div className="ticker-container">
+      {lines.map((line, index) => (
+        <div key={index} className="ticker-line">
+          <div className="ticker-track">
+            <span className="ticker-text">{line}</span>
+            <span className="ticker-text">{line}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface FormData {
   selectedCategories: string[];
   customText: string;
+  company: string;
+  details: string;
   email: string;
 }
 
@@ -63,11 +89,12 @@ export function ConciergeIntake() {
   const [data, setData] = useState<FormData>({
     selectedCategories: [],
     customText: '',
+    company: '',
+    details: '',
     email: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
 
   // UTM params
   const [utmParams, setUtmParams] = useState<{
@@ -99,6 +126,7 @@ export function ConciergeIntake() {
     localStorage.setItem(STORAGE_KEYS.STEP1_DATA, JSON.stringify(data));
   }, [data]);
 
+  // Step 1: Category is required
   const validateStep1 = useCallback((): boolean => {
     const hasCategory = data.selectedCategories.length > 0;
     const hasText = data.customText.trim().length > 0;
@@ -109,9 +137,15 @@ export function ConciergeIntake() {
     return true;
   }, [data.selectedCategories, data.customText]);
 
+  // Step 2: Company + Details are optional, always valid
   const validateStep2 = useCallback((): boolean => {
+    return true; // Both fields optional
+  }, []);
+
+  // Step 3: Email is required
+  const validateStep3 = useCallback((): boolean => {
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      setError(COPY.step2Error);
+      setError(COPY.step3Error);
       return false;
     }
     return true;
@@ -122,20 +156,21 @@ export function ConciergeIntake() {
     setError('');
 
     try {
-      const result = await submitStep1({
+      await submitStep1({
         email: data.email,
         call_types: data.selectedCategories,
         avoided_call_text: data.customText || undefined,
+        company: data.company || undefined,
+        description_text: data.details || undefined,
         ...utmParams,
       });
 
-      track('step2_submit');
-      setToken(result.token);
+      track('form_submit');
 
       localStorage.removeItem(STORAGE_KEYS.STEP1_DATA);
       localStorage.removeItem(STORAGE_KEYS.STEP1_CURRENT_STEP);
 
-      setStep('confirmation');
+      setStep('done');
     } catch (err) {
       console.error('Submission error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -149,22 +184,28 @@ export function ConciergeIntake() {
 
     if (step === 1) {
       if (!validateStep1()) return;
+      track('step1_complete');
       setStep(2);
     } else if (step === 2) {
       if (!validateStep2()) return;
+      track('step2_complete');
+      setStep(3);
+    } else if (step === 3) {
+      if (!validateStep3()) return;
       handleSubmit();
     }
-  }, [step, validateStep1, validateStep2, handleSubmit]);
+  }, [step, validateStep1, validateStep2, validateStep3, handleSubmit]);
 
   const goBack = useCallback(() => {
     setError('');
     if (step === 2) setStep(1);
+    if (step === 3) setStep(2);
   }, [step]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (step === 'confirmation') return;
+      if (step === 'done') return;
 
       if (e.key === 'Enter' && !e.shiftKey) {
         const activeEl = document.activeElement;
@@ -192,18 +233,21 @@ export function ConciergeIntake() {
     setError('');
   };
 
-  const detailsUrl = token ? `/details?t=${token}` : '/details';
+  const getStepProgress = () => {
+    if (step === 1) return 'Step 1 of 3';
+    if (step === 2) return 'Step 2 of 3';
+    if (step === 3) return 'Step 3 of 3';
+    return '';
+  };
 
-  // Confirmation screen
-  if (step === 'confirmation') {
+  // Done screen
+  if (step === 'done') {
     return (
       <div className="screen-layout">
         <div className="card">
           <div className="text-center">
-            <h1 className="title">{COPY.confirmationText}</h1>
-            <p className="subtitle" style={{ marginTop: '16px', marginBottom: '0' }}>
-              <a href={detailsUrl} className="link">{COPY.confirmationLink}</a>
-            </p>
+            <h1 className="title">{COPY.doneTitle}</h1>
+            <p className="subtitle">{COPY.doneSubtext}</p>
           </div>
         </div>
       </div>
@@ -214,12 +258,12 @@ export function ConciergeIntake() {
     <>
       {/* Step indicator */}
       <div className="fixed top-6 right-6 step-indicator">
-        {step === 1 ? COPY.step1Progress : COPY.step2Progress}
+        {getStepProgress()}
       </div>
 
       <div className="screen-layout">
         <div className="card">
-          {/* Step 1 */}
+          {/* Step 1: Category (required) */}
           {step === 1 && (
             <div>
               <h1 className="title">{COPY.step1Title}</h1>
@@ -255,7 +299,7 @@ export function ConciergeIntake() {
             </div>
           )}
 
-          {/* Step 2 */}
+          {/* Step 2: Company + Details (both optional) */}
           {step === 2 && (
             <div>
               <button type="button" className="back-btn" onClick={goBack}>
@@ -266,6 +310,58 @@ export function ConciergeIntake() {
               </button>
 
               <h1 className="title">{COPY.step2Title}</h1>
+              <p className="subtitle">{COPY.step2Subtitle}</p>
+
+              <div className="mt-6">
+                <input
+                  type="text"
+                  className="input"
+                  value={data.company}
+                  onChange={(e) => setData((prev) => ({ ...prev, company: e.target.value }))}
+                  placeholder={COPY.step2CompanyPlaceholder}
+                  autoFocus
+                />
+              </div>
+
+              {/* Company suggestions ticker */}
+              <Ticker
+                lines={[
+                  COMPANY_TICKER_LINE1,
+                  COMPANY_TICKER_LINE2,
+                  COMPANY_TICKER_LINE3,
+                ]}
+              />
+
+              <div className="mt-6">
+                <textarea
+                  className="textarea"
+                  value={data.details}
+                  onChange={(e) => setData((prev) => ({ ...prev, details: e.target.value }))}
+                  placeholder={COPY.step2DetailsPlaceholder}
+                  rows={4}
+                />
+              </div>
+
+              <div className="mt-8">
+                <button className="btn-primary" onClick={goNext}>
+                  {COPY.step2Button}
+                </button>
+              </div>
+              <p className="keyboard-hint">{COPY.keyboardHint}</p>
+            </div>
+          )}
+
+          {/* Step 3: Email (required) */}
+          {step === 3 && (
+            <div>
+              <button type="button" className="back-btn" onClick={goBack}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Back
+              </button>
+
+              <h1 className="title">{COPY.step3Title}</h1>
 
               <div className="mt-6">
                 <input
@@ -276,7 +372,7 @@ export function ConciergeIntake() {
                     setData((prev) => ({ ...prev, email: e.target.value }));
                     setError('');
                   }}
-                  placeholder={COPY.step2Placeholder}
+                  placeholder={COPY.step3Placeholder}
                   autoFocus
                 />
                 {error && <p className="error-text">{error}</p>}
@@ -284,7 +380,7 @@ export function ConciergeIntake() {
 
               <div className="mt-8">
                 <button className="btn-primary" onClick={goNext} disabled={isSubmitting}>
-                  {isSubmitting ? 'Please wait...' : COPY.step2Button}
+                  {isSubmitting ? 'Submitting...' : COPY.step3Button}
                 </button>
               </div>
               <p className="keyboard-hint">{COPY.keyboardHint}</p>
