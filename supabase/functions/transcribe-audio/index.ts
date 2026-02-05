@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { decode as base64Decode } from 'https://deno.land/std@0.168.0/encoding/base64.ts';
 
 const corsHeaders = {
@@ -23,10 +22,8 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Decode audio from base64
     const audioData = base64Decode(audio_base64);
@@ -41,19 +38,25 @@ serve(async (req) => {
     };
     const ext = extMap[audio_mime] || 'webm';
 
-    // Upload to storage
+    // Upload to storage using REST API
     const timestamp = Date.now();
     const audioPath = `${step1_id}/${timestamp}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('voice-intake')
-      .upload(audioPath, audioData, {
-        contentType: audio_mime,
-        upsert: false,
-      });
+    const uploadResponse = await fetch(
+      `${supabaseUrl}/storage/v1/object/voice-intake/${audioPath}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': audio_mime,
+        },
+        body: audioData,
+      }
+    );
 
-    if (uploadError) {
-      console.error('Storage upload error:', uploadError);
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.error('Storage upload error:', errorText);
       throw new Error('Failed to store audio');
     }
 

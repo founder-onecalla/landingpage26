@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { decode as base64Decode } from 'https://deno.land/std@0.168.0/encoding/base64.ts';
 
 const corsHeaders = {
@@ -88,19 +87,19 @@ serve(async (req) => {
 
     const { step1_id } = payload;
 
-    // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify step1 exists
-    const { data: step1, error: step1Error } = await supabase
-      .from('lead_intake_step1')
-      .select('id')
-      .eq('id', step1_id)
-      .single();
+    const step1Response = await fetch(`${supabaseUrl}/rest/v1/lead_intake_step1?id=eq.${step1_id}&select=id`, {
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+    });
 
-    if (step1Error || !step1) {
+    const step1Data = await step1Response.json();
+    if (!step1Data || step1Data.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Invalid token - intake not found' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -108,19 +107,26 @@ serve(async (req) => {
     }
 
     // Insert into database
-    const { error: dbError } = await supabase
-      .from('lead_intake_step2')
-      .insert({
+    const insertResponse = await fetch(`${supabaseUrl}/rest/v1/lead_intake_step2`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
         step1_id,
         company: company.trim(),
         description_text: description_text.trim(),
         audio_path: audio_path || null,
         transcript_text: transcript_text || null,
         phone: phone?.trim() || null,
-      });
+      }),
+    });
 
-    if (dbError) {
-      console.error('Database error:', dbError);
+    if (!insertResponse.ok) {
+      const errorText = await insertResponse.text();
+      console.error('Database error:', errorText);
       throw new Error('Failed to save data');
     }
 

@@ -115,9 +115,6 @@ export interface SendVerificationCodeResult {
   token: string;
 }
 
-// Development mode: generate code locally when backend isn't available
-const DEV_MODE = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.DEV;
-
 function generateDevToken(email: string, code: string): string {
   const payload = {
     email,

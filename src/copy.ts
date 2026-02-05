@@ -41,6 +41,27 @@ export const COPY = {
   emailBody: 'Click the button below to confirm your email and complete your submission.',
   emailButton: 'Verify my email',
   emailExpiry: 'This link expires in 24 hours.',
+
+  // Intake Page A (Company) - for /details route
+  intakeATitle: 'Which company is this call with?',
+  intakeAPlaceholder: '',
+  intakeAError: 'Company is required',
+  intakeAButton: 'Continue',
+
+  // Intake Page B (Details)
+  intakeBTitle: "Tell us what's going on.",
+  intakeBPlaceholder: 'Type a brief description here…',
+  intakeBMicHelper: 'Tap to record',
+  intakeBTranscriptLabel: 'Transcript',
+  intakeBTranscriptHelper: 'Edit if needed.',
+  intakeBTryAgain: 'Try again',
+  intakeBError: 'Please describe what you need.',
+  intakeBButton: 'Submit',
+
+  // Completion screen
+  completionTitle: 'Submitted',
+  completionSubtext: "We'll follow up over email.",
+  completionButton: 'Submit another request',
 } as const;
 
 // Call type categories for Step 1 (exact order)
