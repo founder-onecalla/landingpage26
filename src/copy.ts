@@ -35,10 +35,12 @@ export const COPY = {
   // Shared
   keyboardHint: 'Press Enter to continue',
 
-  // Email (for follow-up)
-  emailSubject: "We're working on your call",
-  emailHeadline: "We're working on your call",
-  emailBody: "Thanks for submitting your request. We'll be in touch soon with updates.",
+  // Verification email
+  emailSubject: 'Verify your email',
+  emailHeadline: 'Verify your email',
+  emailBody: 'Click the button below to confirm your email and complete your submission.',
+  emailButton: 'Verify my email',
+  emailExpiry: 'This link expires in 24 hours.',
 } as const;
 
 // Call type categories for Step 1 (exact order)
