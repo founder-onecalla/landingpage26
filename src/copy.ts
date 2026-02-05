@@ -16,13 +16,13 @@ export const COPY = {
   step2Button: 'Continue',
   step2Skip: 'Skip this step',
 
-  // Step 3 of 4: Email (required)
+  // Step 3 of 3: Email (required)
   step3Title: 'Where should we send updates?',
   step3Placeholder: 'name@email.com',
   step3Button: 'Submit',
   step3Error: 'Please enter a valid email.',
 
-  // Step 4 of 4: Check inbox
+  // Check inbox (post-submit, not a numbered step)
   step4Title: 'Check your inbox',
   step4Subtitle: 'We sent a verification link to',
   step4Instruction: 'Click the link in your email to confirm.',

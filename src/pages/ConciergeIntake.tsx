@@ -308,11 +308,10 @@ export function ConciergeIntake() {
   };
 
   const getStepProgress = () => {
-    if (step === 1) return 'Step 1 of 4';
-    if (step === 2) return 'Step 2 of 4';
-    if (step === 3) return 'Step 3 of 4';
-    if (step === 4) return 'Step 4 of 4';
-    return '';
+    if (step === 1) return 'Step 1 of 3';
+    if (step === 2) return 'Step 2 of 3';
+    if (step === 3) return 'Step 3 of 3';
+    return ''; // Step 4 (check inbox) doesn't show progress
   };
 
   // Done screen
