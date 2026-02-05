@@ -8,12 +8,13 @@ export const COPY = {
   step1Button: 'Continue',
   step1Error: 'Please choose a category or type your own.',
 
-  // Step 2 of 3: Company + Details (optional)
-  step2Title: 'Tell us more (optional)',
-  step2Subtitle: 'This helps us handle your call faster.',
-  step2CompanyPlaceholder: 'Company name',
+  // Step 2 of 3: Company + Details
+  step2Title: 'Tell us more',
+  step2Subtitle: 'Pick companies or type your own. Add any details.',
+  step2CompanyPlaceholder: 'Type another company...',
   step2DetailsPlaceholder: "What's going on? Any details help...",
   step2Button: 'Continue',
+  step2Skip: 'Skip this step',
 
   // Step 3 of 3: Email (required)
   step3Title: 'Where should we send updates?',

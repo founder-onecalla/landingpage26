@@ -241,6 +241,25 @@ button, input, textarea, a {
   text-decoration: underline;
 }
 
+.btn-skip {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.btn-skip:hover {
+  color: var(--text-secondary);
+}
+
 /* ============================================
    CLICKABLE TICKER (Step 1 - selectable categories)
    ============================================ */

@@ -59,15 +59,46 @@ function ClickableTicker({
   );
 }
 
-// Non-interactive ticker for company suggestions
-function Ticker({ lines }: { lines: string[] }) {
+// Clickable company ticker - parses string lines into clickable items
+function ClickableCompanyTicker({ 
+  lines, 
+  selectedItems, 
+  onToggle 
+}: { 
+  lines: string[]; 
+  selectedItems: string[]; 
+  onToggle: (item: string) => void;
+}) {
+  // Parse company lines (format: "Company1 · Company2 · Company3")
+  const parsedLines = lines.map(line => line.split(' · '));
+  
   return (
-    <div className="ticker-container">
-      {lines.map((line, index) => (
-        <div key={index} className="ticker-line">
-          <div className="ticker-track">
-            <span className="ticker-text">{line}</span>
-            <span className="ticker-text">{line}</span>
+    <div className="clickable-ticker-container">
+      {parsedLines.map((companies, lineIndex) => (
+        <div key={lineIndex} className="clickable-ticker-line">
+          <div className="clickable-ticker-track">
+            {/* First set */}
+            {companies.map((company) => (
+              <button
+                key={`${company}-1`}
+                type="button"
+                className={`clickable-ticker-item ${selectedItems.includes(company) ? 'selected' : ''}`}
+                onClick={() => onToggle(company)}
+              >
+                {company}
+              </button>
+            ))}
+            {/* Duplicate set for seamless loop */}
+            {companies.map((company) => (
+              <button
+                key={`${company}-2`}
+                type="button"
+                className={`clickable-ticker-item ${selectedItems.includes(company) ? 'selected' : ''}`}
+                onClick={() => onToggle(company)}
+              >
+                {company}
+              </button>
+            ))}
           </div>
         </div>
       ))}
@@ -78,7 +109,8 @@ function Ticker({ lines }: { lines: string[] }) {
 interface FormData {
   selectedCategories: string[];
   customText: string;
-  company: string;
+  selectedCompanies: string[];
+  companyText: string;
   details: string;
   email: string;
 }
@@ -89,7 +121,8 @@ export function ConciergeIntake() {
   const [data, setData] = useState<FormData>({
     selectedCategories: [],
     customText: '',
-    company: '',
+    selectedCompanies: [],
+    companyText: '',
     details: '',
     email: '',
   });
@@ -155,12 +188,18 @@ export function ConciergeIntake() {
     setIsSubmitting(true);
     setError('');
 
+    // Combine selected companies with typed company
+    const allCompanies = [...data.selectedCompanies];
+    if (data.companyText.trim()) {
+      allCompanies.push(data.companyText.trim());
+    }
+
     try {
       await submitStep1({
         email: data.email,
         call_types: data.selectedCategories,
         avoided_call_text: data.customText || undefined,
-        company: data.company || undefined,
+        company: allCompanies.length > 0 ? allCompanies.join(', ') : undefined,
         description_text: data.details || undefined,
         ...utmParams,
       });
@@ -231,6 +270,18 @@ export function ConciergeIntake() {
       };
     });
     setError('');
+  };
+
+  const toggleCompany = (company: string) => {
+    setData((prev) => {
+      const isSelected = prev.selectedCompanies.includes(company);
+      return {
+        ...prev,
+        selectedCompanies: isSelected
+          ? prev.selectedCompanies.filter((c) => c !== company)
+          : [...prev.selectedCompanies, company],
+      };
+    });
   };
 
   const getStepProgress = () => {
@@ -316,20 +367,22 @@ export function ConciergeIntake() {
                 <input
                   type="text"
                   className="input"
-                  value={data.company}
-                  onChange={(e) => setData((prev) => ({ ...prev, company: e.target.value }))}
+                  value={data.companyText}
+                  onChange={(e) => setData((prev) => ({ ...prev, companyText: e.target.value }))}
                   placeholder={COPY.step2CompanyPlaceholder}
                   autoFocus
                 />
               </div>
 
-              {/* Company suggestions ticker */}
-              <Ticker
+              {/* Company suggestions ticker - clickable */}
+              <ClickableCompanyTicker
                 lines={[
                   COMPANY_TICKER_LINE1,
                   COMPANY_TICKER_LINE2,
                   COMPANY_TICKER_LINE3,
                 ]}
+                selectedItems={data.selectedCompanies}
+                onToggle={toggleCompany}
               />
 
               <div className="mt-6">
@@ -346,8 +399,10 @@ export function ConciergeIntake() {
                 <button className="btn-primary" onClick={goNext}>
                   {COPY.step2Button}
                 </button>
+                <button type="button" className="btn-skip" onClick={goNext}>
+                  {COPY.step2Skip}
+                </button>
               </div>
-              <p className="keyboard-hint">{COPY.keyboardHint}</p>
             </div>
           )}
 
