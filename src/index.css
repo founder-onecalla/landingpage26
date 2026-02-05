@@ -1,0 +1,452 @@
+@import "tailwindcss";
+
+/* ============================================
+   DESIGN SYSTEM - Typeform-like, minimal
+   ============================================ */
+
+:root {
+  --bg-page: #F7F7FB;
+  --bg-card: #FFFFFF;
+  --text-primary: #0B0F1A;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --accent: #6C5CE7;
+  --accent-hover: #5B4BD6;
+  --border: #E5E7EB;
+  --error: #EF4444;
+  --focus-ring: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  --font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --card-max-width: 540px;
+  --card-padding: 48px;
+  --card-radius: 24px;
+  --input-radius: 12px;
+  --button-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, textarea, a {
+  transition: all 150ms ease;
+}
+
+:focus-visible {
+  outline: none;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.screen-layout {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--card-radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  max-width: var(--card-max-width);
+  width: 100%;
+  padding: var(--card-padding);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 24px;
+  }
+}
+
+.subtitle {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 28px 0;
+}
+
+.helper {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 8px 0 0 0;
+}
+
+.step-indicator {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.keyboard-hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* ============================================
+   INPUTS
+   ============================================ */
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--input-radius);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.input.error {
+  border-color: var(--error);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--input-radius);
+  resize: vertical;
+}
+
+.textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.textarea.error {
+  border-color: var(--error);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-primary {
+  width: 100%;
+  height: 48px;
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: #FFFFFF;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--button-radius);
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:focus {
+  box-shadow: var(--focus-ring);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  color: var(--text-primary);
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   CATEGORY CHIPS (Step 1 - selectable)
+   ============================================ */
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.category-chip {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.category-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.category-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+
+/* ============================================
+   TICKER (3-line scrolling, non-interactive)
+   ============================================ */
+
+.ticker-container {
+  margin-top: 24px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ticker-line {
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ticker-line:last-child {
+  margin-bottom: 0;
+}
+
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: ticker-scroll 60s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  padding-right: 24px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab.active {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+
+.error-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--error);
+  margin-top: 8px;
+}
+
+/* ============================================
+   BACK BUTTON
+   ============================================ */
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+
+.back-btn:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   RECORD BUTTON
+   ============================================ */
+
+.record-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: transform 150ms ease;
+}
+
+.record-btn:hover {
+  transform: scale(1.05);
+}
+
+.record-btn.idle {
+  background: var(--accent);
+}
+
+.record-btn.recording {
+  background: var(--error);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================
+   TRANSCRIPT SECTION
+   ============================================ */
+
+.transcript-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.transcript-helper {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
