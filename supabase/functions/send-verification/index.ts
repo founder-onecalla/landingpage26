@@ -72,6 +72,33 @@ serve(async (req) => {
       if (!emailResponse.ok) {
         console.error('Failed to send email:', await emailResponse.text());
       }
+
+      // Send notification to founder
+      const FOUNDER_EMAIL = 'founder@onecalla.com';
+      const notifyResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'OneCalla <noreply@onecalla.com>',
+          to: FOUNDER_EMAIL,
+          subject: `New signup: ${email}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+              <h1 style="color: #0B0F1A; font-size: 24px; font-weight: 600; margin-bottom: 16px;">New Lead</h1>
+              <p style="color: #6B7280; font-size: 16px; line-height: 1.5;">A new user submitted their email:</p>
+              <p style="color: #0B0F1A; font-size: 18px; font-weight: 600; margin: 16px 0;">${email}</p>
+              <p style="color: #9CA3AF; font-size: 14px; margin-top: 32px;">Submitted at ${new Date().toISOString()}</p>
+            </div>
+          `,
+        }),
+      });
+
+      if (!notifyResponse.ok) {
+        console.error('Failed to send founder notification:', await notifyResponse.text());
+      }
     } else {
       // Development mode - log the link
       console.log(`[DEV] Verification link for ${email}: ${verificationLink}`);
