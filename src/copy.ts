@@ -3,7 +3,7 @@
 export const COPY = {
   // Step 1 of 3: Category (required)
   step1Title: 'What calls are you putting off?',
-  step1Subtitle: 'Pick a category, or type your own.',
+  step1Subtitle: 'Pick one or more, or type your own.',
   step1Placeholder: '',
   step1Button: 'Continue',
   step1Error: 'Please choose a category or type your own.',
