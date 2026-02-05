@@ -64,6 +64,11 @@ export const CALL_CATEGORIES = [
   'Other',
 ] as const;
 
+// Categories organized into 3 ticker lines
+export const CATEGORY_TICKER_LINE1 = ['Book or reschedule', 'Cancel something', 'Billing issue or dispute'] as const;
+export const CATEGORY_TICKER_LINE2 = ['Status tracking', 'Account change', 'Fix a mistake'] as const;
+export const CATEGORY_TICKER_LINE3 = ['Escalate to a human', 'Other'] as const;
+
 // Company suggestions ticker (3 lines, exact content and order)
 export const COMPANY_TICKER_LINE1 = 'GEICO · Progressive · State Farm · Allstate · Liberty Mutual · Nationwide · Farmers Insurance · Travelers · USAA · AAA Insurance · American Family Insurance · The Hartford · MetLife · Mutual of Omaha · Chubb';
 export const COMPANY_TICKER_LINE2 = 'Xfinity · Spectrum · Comcast · Cox · Optimum · AT&T · Verizon · T-Mobile · Verizon Fios · AT&T Fiber · CenturyLink · Frontier · Google Fiber · DirecTV · Dish';

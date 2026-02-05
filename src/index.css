@@ -242,37 +242,69 @@ button, input, textarea, a {
 }
 
 /* ============================================
-   CATEGORY CHIPS (Step 1 - selectable)
+   CLICKABLE TICKER (Step 1 - selectable categories)
    ============================================ */
 
-.category-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
+.clickable-ticker-container {
+  margin-top: 24px;
+  overflow: hidden;
 }
 
-.category-chip {
+.clickable-ticker-line {
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.clickable-ticker-line:last-child {
+  margin-bottom: 0;
+}
+
+.clickable-ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.clickable-ticker-item {
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 16px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  padding: 6px 0;
+  margin-right: 24px;
   cursor: pointer;
-  transition: all 150ms ease;
+  transition: color 150ms ease;
+  position: relative;
 }
 
-.category-chip:hover {
-  border-color: var(--accent);
+.clickable-ticker-item::after {
+  content: '·';
+  position: absolute;
+  right: -14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.clickable-ticker-item:hover {
   color: var(--accent);
 }
 
-.category-chip.selected {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #FFFFFF;
+.clickable-ticker-item.selected {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Pause animation on hover for easier clicking */
+.clickable-ticker-container:hover .clickable-ticker-track {
+  animation-play-state: paused;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .clickable-ticker-track {
+    animation: none;
+  }
 }
 
 /* ============================================

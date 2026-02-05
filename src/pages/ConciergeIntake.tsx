@@ -3,9 +3,53 @@ import { useSearchParams } from 'react-router-dom';
 import { submitStep1 } from '../lib/api';
 import { track } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
-import { COPY, CALL_CATEGORIES } from '../copy';
+import { COPY, CATEGORY_TICKER_LINE1, CATEGORY_TICKER_LINE2, CATEGORY_TICKER_LINE3 } from '../copy';
 
 type Step = 1 | 2 | 'confirmation';
+
+// Clickable ticker component for category selection
+function ClickableTicker({ 
+  lines, 
+  selectedItems, 
+  onToggle 
+}: { 
+  lines: readonly (readonly string[])[]; 
+  selectedItems: string[]; 
+  onToggle: (item: string) => void;
+}) {
+  return (
+    <div className="clickable-ticker-container">
+      {lines.map((line, lineIndex) => (
+        <div key={lineIndex} className="clickable-ticker-line">
+          <div className="clickable-ticker-track">
+            {/* First set */}
+            {line.map((item) => (
+              <button
+                key={`${item}-1`}
+                type="button"
+                className={`clickable-ticker-item ${selectedItems.includes(item) ? 'selected' : ''}`}
+                onClick={() => onToggle(item)}
+              >
+                {item}
+              </button>
+            ))}
+            {/* Duplicate set for seamless loop */}
+            {line.map((item) => (
+              <button
+                key={`${item}-2`}
+                type="button"
+                className={`clickable-ticker-item ${selectedItems.includes(item) ? 'selected' : ''}`}
+                onClick={() => onToggle(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface FormData {
   selectedCategories: string[];
@@ -193,19 +237,12 @@ export function ConciergeIntake() {
                 autoFocus
               />
 
-              {/* Category chips - these ARE selectable */}
-              <div className="category-chips">
-                {CALL_CATEGORIES.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={`category-chip ${data.selectedCategories.includes(category) ? 'selected' : ''}`}
-                    onClick={() => toggleCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              {/* Category ticker - clickable, 3 lines, scrolling */}
+              <ClickableTicker
+                lines={[CATEGORY_TICKER_LINE1, CATEGORY_TICKER_LINE2, CATEGORY_TICKER_LINE3]}
+                selectedItems={data.selectedCategories}
+                onToggle={toggleCategory}
+              />
 
               {error && <p className="error-text">{error}</p>}
 
