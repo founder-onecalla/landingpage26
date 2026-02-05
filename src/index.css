@@ -152,11 +152,36 @@ button, input, textarea, a {
   border-color: var(--error);
 }
 
-.verification-input {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: 8px;
-  text-align: center;
+/* ============================================
+   CHECK INBOX SCREEN
+   ============================================ */
+
+.inbox-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--bg-page);
+  border-radius: 50%;
+  color: var(--accent);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.back-link:hover {
+  color: var(--text-secondary);
 }
 
 .textarea {

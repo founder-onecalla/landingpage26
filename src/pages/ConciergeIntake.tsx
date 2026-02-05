@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { submitStep1, sendVerificationCode, verifyCode } from '../lib/api';
+import { submitStep1, sendVerificationCode } from '../lib/api';
 import { track } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
 import { 
@@ -113,7 +113,6 @@ interface FormData {
   companyText: string;
   details: string;
   email: string;
-  verificationCode: string;
 }
 
 export function ConciergeIntake() {
@@ -126,11 +125,9 @@ export function ConciergeIntake() {
     companyText: '',
     details: '',
     email: '',
-    verificationCode: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   // UTM params
   const [utmParams, setUtmParams] = useState<{
@@ -187,56 +184,19 @@ export function ConciergeIntake() {
     return true;
   }, [data.email]);
 
-  // Step 4: Verification code
-  const validateStep4 = useCallback((): boolean => {
-    if (!data.verificationCode || data.verificationCode.length !== 6) {
-      setError(COPY.step4Error);
-      return false;
-    }
-    return true;
-  }, [data.verificationCode]);
-
-  // Send verification code
-  const handleSendCode = useCallback(async () => {
+  // Submit form and send verification email
+  const handleSubmitAndSendEmail = useCallback(async () => {
     setIsSubmitting(true);
     setError('');
 
     try {
-      const result = await sendVerificationCode({ email: data.email });
-      setVerificationToken(result.token);
-      track('verification_sent');
-      setStep(4);
-    } catch (err) {
-      console.error('Send code error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send code. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [data.email]);
-
-  // Verify code and submit
-  const handleVerifyAndSubmit = useCallback(async () => {
-    setIsSubmitting(true);
-    setError('');
-
-    try {
-      // Verify the code first
-      if (!verificationToken) throw new Error('No verification token');
-      
-      await verifyCode({
-        token: verificationToken,
-        code: data.verificationCode,
-      });
-
-      track('verification_complete');
-
       // Combine selected companies with typed company
       const allCompanies = [...data.selectedCompanies];
       if (data.companyText.trim()) {
         allCompanies.push(data.companyText.trim());
       }
 
-      // Now submit the form
+      // Submit the form data
       await submitStep1({
         email: data.email,
         call_types: data.selectedCategories,
@@ -246,33 +206,35 @@ export function ConciergeIntake() {
         ...utmParams,
       });
 
+      // Send verification email
+      await sendVerificationCode({ email: data.email });
+
       track('form_submit');
+      track('verification_sent');
 
       localStorage.removeItem(STORAGE_KEYS.STEP1_DATA);
       localStorage.removeItem(STORAGE_KEYS.STEP1_CURRENT_STEP);
 
-      setStep('done');
+      setStep(4); // Show "check your inbox" screen
     } catch (err) {
-      console.error('Verification/submission error:', err);
-      setError(err instanceof Error ? err.message : COPY.step4Error);
+      console.error('Submission error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [data, verificationToken, utmParams]);
+  }, [data, utmParams]);
 
-  // Resend verification code
-  const handleResendCode = useCallback(async () => {
+  // Resend verification email
+  const handleResendEmail = useCallback(async () => {
     setIsSubmitting(true);
     setError('');
 
     try {
-      const result = await sendVerificationCode({ email: data.email });
-      setVerificationToken(result.token);
-      setData(prev => ({ ...prev, verificationCode: '' }));
+      await sendVerificationCode({ email: data.email });
       track('verification_resent');
     } catch (err) {
-      console.error('Resend code error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to resend code.');
+      console.error('Resend email error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to resend email.');
     } finally {
       setIsSubmitting(false);
     }
@@ -291,12 +253,9 @@ export function ConciergeIntake() {
       setStep(3);
     } else if (step === 3) {
       if (!validateStep3()) return;
-      handleSendCode();
-    } else if (step === 4) {
-      if (!validateStep4()) return;
-      handleVerifyAndSubmit();
+      handleSubmitAndSendEmail();
     }
-  }, [step, validateStep1, validateStep2, validateStep3, validateStep4, handleSendCode, handleVerifyAndSubmit]);
+  }, [step, validateStep1, validateStep2, validateStep3, handleSubmitAndSendEmail]);
 
   const goBack = useCallback(() => {
     setError('');
@@ -500,59 +459,40 @@ export function ConciergeIntake() {
 
               <div className="mt-8">
                 <button className="btn-primary" onClick={goNext} disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending code...' : COPY.step3Button}
+                  {isSubmitting ? 'Submitting...' : COPY.step3Button}
                 </button>
               </div>
               <p className="keyboard-hint">{COPY.keyboardHint}</p>
             </div>
           )}
 
-          {/* Step 4: Verify code */}
+          {/* Step 4: Check inbox */}
           {step === 4 && (
-            <div>
-              <button type="button" className="back-btn" onClick={goBack}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <div className="text-center">
+              <div className="inbox-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Back
-              </button>
+              </div>
 
               <h1 className="title">{COPY.step4Title}</h1>
               <p className="subtitle">{COPY.step4Subtitle} <strong>{data.email}</strong></p>
-
-              <div className="mt-6">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  className={`input verification-input ${error ? 'error' : ''}`}
-                  value={data.verificationCode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                    setData((prev) => ({ ...prev, verificationCode: value }));
-                    setError('');
-                  }}
-                  placeholder={COPY.step4Placeholder}
-                  autoFocus
-                  autoComplete="one-time-code"
-                />
-                {error && <p className="error-text">{error}</p>}
-              </div>
+              <p className="helper" style={{ marginTop: '8px' }}>{COPY.step4Instruction}</p>
 
               <div className="mt-8">
-                <button className="btn-primary" onClick={goNext} disabled={isSubmitting}>
-                  {isSubmitting ? 'Verifying...' : COPY.step4Button}
-                </button>
                 <button 
                   type="button" 
                   className="btn-skip" 
-                  onClick={handleResendCode}
+                  onClick={handleResendEmail}
                   disabled={isSubmitting}
                 >
-                  {COPY.step4Resend}
+                  {isSubmitting ? 'Sending...' : COPY.step4Resend}
                 </button>
               </div>
+
+              <button type="button" className="back-link" onClick={goBack}>
+                Wrong email? Go back
+              </button>
             </div>
           )}
         </div>
