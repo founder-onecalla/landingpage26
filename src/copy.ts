@@ -16,11 +16,19 @@ export const COPY = {
   step2Button: 'Continue',
   step2Skip: 'Skip this step',
 
-  // Step 3 of 3: Email (required)
+  // Step 3 of 4: Email (required)
   step3Title: 'Where should we send updates?',
   step3Placeholder: 'name@email.com',
-  step3Button: 'Submit',
+  step3Button: 'Send verification code',
   step3Error: 'Please enter a valid email.',
+
+  // Step 4 of 4: Verify code
+  step4Title: 'Check your inbox',
+  step4Subtitle: 'Enter the 6-digit code we sent to',
+  step4Placeholder: '000000',
+  step4Button: 'Verify & submit',
+  step4Error: 'Invalid code. Please try again.',
+  step4Resend: "Didn't get it? Resend code",
 
   // Done screen
   doneTitle: "You're all set!",

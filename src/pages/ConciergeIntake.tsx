@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { submitStep1 } from '../lib/api';
+import { submitStep1, sendVerificationCode, verifyCode } from '../lib/api';
 import { track } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
 import { 
@@ -13,7 +13,7 @@ import {
   COMPANY_TICKER_LINE3,
 } from '../copy';
 
-type Step = 1 | 2 | 3 | 'done';
+type Step = 1 | 2 | 3 | 4 | 'done';
 
 // Clickable ticker component for category selection
 function ClickableTicker({ 
@@ -113,6 +113,7 @@ interface FormData {
   companyText: string;
   details: string;
   email: string;
+  verificationCode: string;
 }
 
 export function ConciergeIntake() {
@@ -125,9 +126,11 @@ export function ConciergeIntake() {
     companyText: '',
     details: '',
     email: '',
+    verificationCode: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   // UTM params
   const [utmParams, setUtmParams] = useState<{
@@ -184,17 +187,56 @@ export function ConciergeIntake() {
     return true;
   }, [data.email]);
 
-  const handleSubmit = useCallback(async () => {
+  // Step 4: Verification code
+  const validateStep4 = useCallback((): boolean => {
+    if (!data.verificationCode || data.verificationCode.length !== 6) {
+      setError(COPY.step4Error);
+      return false;
+    }
+    return true;
+  }, [data.verificationCode]);
+
+  // Send verification code
+  const handleSendCode = useCallback(async () => {
     setIsSubmitting(true);
     setError('');
 
-    // Combine selected companies with typed company
-    const allCompanies = [...data.selectedCompanies];
-    if (data.companyText.trim()) {
-      allCompanies.push(data.companyText.trim());
+    try {
+      const result = await sendVerificationCode({ email: data.email });
+      setVerificationToken(result.token);
+      track('verification_sent');
+      setStep(4);
+    } catch (err) {
+      console.error('Send code error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send code. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
+  }, [data.email]);
+
+  // Verify code and submit
+  const handleVerifyAndSubmit = useCallback(async () => {
+    setIsSubmitting(true);
+    setError('');
 
     try {
+      // Verify the code first
+      if (!verificationToken) throw new Error('No verification token');
+      
+      await verifyCode({
+        token: verificationToken,
+        code: data.verificationCode,
+      });
+
+      track('verification_complete');
+
+      // Combine selected companies with typed company
+      const allCompanies = [...data.selectedCompanies];
+      if (data.companyText.trim()) {
+        allCompanies.push(data.companyText.trim());
+      }
+
+      // Now submit the form
       await submitStep1({
         email: data.email,
         call_types: data.selectedCategories,
@@ -211,12 +253,30 @@ export function ConciergeIntake() {
 
       setStep('done');
     } catch (err) {
-      console.error('Submission error:', err);
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      console.error('Verification/submission error:', err);
+      setError(err instanceof Error ? err.message : COPY.step4Error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [data, utmParams]);
+  }, [data, verificationToken, utmParams]);
+
+  // Resend verification code
+  const handleResendCode = useCallback(async () => {
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const result = await sendVerificationCode({ email: data.email });
+      setVerificationToken(result.token);
+      setData(prev => ({ ...prev, verificationCode: '' }));
+      track('verification_resent');
+    } catch (err) {
+      console.error('Resend code error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to resend code.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [data.email]);
 
   const goNext = useCallback(() => {
     setError('');
@@ -231,14 +291,18 @@ export function ConciergeIntake() {
       setStep(3);
     } else if (step === 3) {
       if (!validateStep3()) return;
-      handleSubmit();
+      handleSendCode();
+    } else if (step === 4) {
+      if (!validateStep4()) return;
+      handleVerifyAndSubmit();
     }
-  }, [step, validateStep1, validateStep2, validateStep3, handleSubmit]);
+  }, [step, validateStep1, validateStep2, validateStep3, validateStep4, handleSendCode, handleVerifyAndSubmit]);
 
   const goBack = useCallback(() => {
     setError('');
     if (step === 2) setStep(1);
     if (step === 3) setStep(2);
+    if (step === 4) setStep(3);
   }, [step]);
 
   // Keyboard navigation
@@ -285,9 +349,10 @@ export function ConciergeIntake() {
   };
 
   const getStepProgress = () => {
-    if (step === 1) return 'Step 1 of 3';
-    if (step === 2) return 'Step 2 of 3';
-    if (step === 3) return 'Step 3 of 3';
+    if (step === 1) return 'Step 1 of 4';
+    if (step === 2) return 'Step 2 of 4';
+    if (step === 3) return 'Step 3 of 4';
+    if (step === 4) return 'Step 4 of 4';
     return '';
   };
 
@@ -435,10 +500,59 @@ export function ConciergeIntake() {
 
               <div className="mt-8">
                 <button className="btn-primary" onClick={goNext} disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : COPY.step3Button}
+                  {isSubmitting ? 'Sending code...' : COPY.step3Button}
                 </button>
               </div>
               <p className="keyboard-hint">{COPY.keyboardHint}</p>
+            </div>
+          )}
+
+          {/* Step 4: Verify code */}
+          {step === 4 && (
+            <div>
+              <button type="button" className="back-btn" onClick={goBack}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Back
+              </button>
+
+              <h1 className="title">{COPY.step4Title}</h1>
+              <p className="subtitle">{COPY.step4Subtitle} <strong>{data.email}</strong></p>
+
+              <div className="mt-6">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  className={`input verification-input ${error ? 'error' : ''}`}
+                  value={data.verificationCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setData((prev) => ({ ...prev, verificationCode: value }));
+                    setError('');
+                  }}
+                  placeholder={COPY.step4Placeholder}
+                  autoFocus
+                  autoComplete="one-time-code"
+                />
+                {error && <p className="error-text">{error}</p>}
+              </div>
+
+              <div className="mt-8">
+                <button className="btn-primary" onClick={goNext} disabled={isSubmitting}>
+                  {isSubmitting ? 'Verifying...' : COPY.step4Button}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-skip" 
+                  onClick={handleResendCode}
+                  disabled={isSubmitting}
+                >
+                  {COPY.step4Resend}
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -105,6 +105,33 @@ export async function submitStep2(params: SubmitStep2Params): Promise<{ ok: bool
   return callEdgeFunction('submit-step2', params);
 }
 
+// Email verification
+export interface SendVerificationCodeParams {
+  email: string;
+}
+
+export interface SendVerificationCodeResult {
+  ok: boolean;
+  token: string;
+}
+
+export async function sendVerificationCode(params: SendVerificationCodeParams): Promise<SendVerificationCodeResult> {
+  return callEdgeFunction('send-verification', params);
+}
+
+export interface VerifyCodeParams {
+  token: string;
+  code: string;
+}
+
+export interface VerifyCodeResult {
+  ok: boolean;
+}
+
+export async function verifyCode(params: VerifyCodeParams): Promise<VerifyCodeResult> {
+  return callEdgeFunction('verify-code', params);
+}
+
 // Helper to convert Blob to base64
 export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {

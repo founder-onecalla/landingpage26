@@ -152,6 +152,13 @@ button, input, textarea, a {
   border-color: var(--error);
 }
 
+.verification-input {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 8px;
+  text-align: center;
+}
+
 .textarea {
   width: 100%;
   min-height: 120px;
