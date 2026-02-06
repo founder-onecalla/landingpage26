@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { track, identify } from '../lib/analytics';
 
 export function Verify() {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ export function Verify() {
     if (!token) {
       setStatus('error');
       setError('Invalid verification link.');
+      track('email_verify_failed', { reason: 'no_token' });
       return;
     }
 
@@ -24,14 +26,20 @@ export function Verify() {
       if (payload.exp && payload.exp < Date.now()) {
         setStatus('error');
         setError('This link has expired. Please request a new one.');
+        track('email_verify_failed', { reason: 'expired' });
         return;
       }
 
       // Token is valid - show success
       setStatus('success');
+      if (payload.email) {
+        identify(payload.email);
+      }
+      track('email_verified');
     } catch (e) {
       setStatus('error');
       setError('Invalid verification link.');
+      track('email_verify_failed', { reason: 'invalid_token' });
     }
   }, [searchParams]);
 

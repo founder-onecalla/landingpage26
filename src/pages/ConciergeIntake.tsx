@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { submitStep1, sendVerificationCode } from '../lib/api';
-import { track } from '../lib/analytics';
+import { track, identify } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
 import { 
   COPY, 
@@ -209,7 +209,13 @@ export function ConciergeIntake() {
       // Send verification email
       await sendVerificationCode({ email: data.email });
 
-      track('form_submit');
+      // Identify user and track submission
+      identify(data.email);
+      track('form_submit', {
+        categories: data.selectedCategories,
+        has_company: data.selectedCompanies.length > 0 || data.companyText.trim().length > 0,
+        has_details: !!data.details,
+      });
       track('verification_sent');
 
       localStorage.removeItem(STORAGE_KEYS.STEP1_DATA);
@@ -263,6 +269,11 @@ export function ConciergeIntake() {
     if (step === 3) setStep(2);
     if (step === 4) setStep(3);
   }, [step]);
+
+  const skipStep2 = useCallback(() => {
+    track('step2_skip');
+    setStep(3);
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
@@ -422,7 +433,7 @@ export function ConciergeIntake() {
                 <button className="btn-primary" onClick={goNext}>
                   {COPY.step2Button}
                 </button>
-                <button type="button" className="btn-skip" onClick={goNext}>
+                <button type="button" className="btn-skip" onClick={skipStep2}>
                   {COPY.step2Skip}
                 </button>
               </div>
