@@ -53,3 +53,20 @@ export const identify = (email: string): void => {
     posthog.identify(email, { email });
   }
 };
+
+// Meta Pixel tracking
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
+export const trackMetaEvent = (
+  event: 'Lead' | 'CompleteRegistration' | 'ViewContent',
+  params?: Record<string, unknown>
+): void => {
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', event, params);
+    console.log('[Meta Pixel]', event, params);
+  }
+};

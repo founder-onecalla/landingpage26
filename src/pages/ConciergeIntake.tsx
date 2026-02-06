@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { submitStep1, sendVerificationCode } from '../lib/api';
-import { track, identify } from '../lib/analytics';
+import { track, identify, trackMetaEvent } from '../lib/analytics';
 import { STORAGE_KEYS } from '../types';
 import { 
   COPY, 
@@ -217,6 +217,7 @@ export function ConciergeIntake() {
         has_details: !!data.details,
       });
       track('verification_sent');
+      trackMetaEvent('CompleteRegistration'); // Meta Pixel: signup complete
 
       localStorage.removeItem(STORAGE_KEYS.STEP1_DATA);
       localStorage.removeItem(STORAGE_KEYS.STEP1_CURRENT_STEP);
@@ -252,6 +253,7 @@ export function ConciergeIntake() {
     if (step === 1) {
       if (!validateStep1()) return;
       track('step1_complete');
+      trackMetaEvent('Lead'); // Meta Pixel: user showed intent
       setStep(2);
     } else if (step === 2) {
       if (!validateStep2()) return;
